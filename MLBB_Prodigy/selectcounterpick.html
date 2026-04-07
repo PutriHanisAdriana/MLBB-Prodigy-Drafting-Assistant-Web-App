@@ -1,0 +1,536 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Counter Pick Detail – MLBB Prodigy</title>
+  <link rel="stylesheet" href="style.css">
+  <style>
+    /* ── TREND CHART SECTION ─────────────────────────── */
+    .trend-section {
+      background: var(--secondary);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      overflow: hidden;
+      margin-top: 20px;
+    }
+
+    .trend-header {
+      padding: 12px 18px;
+      border-bottom: 1px solid var(--border);
+      background: rgba(0,0,0,0.25);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+
+    .trend-header h2 {
+      font-family: 'Rajdhani', sans-serif;
+      font-size: 17px;
+      font-weight: 700;
+      letter-spacing: 0.5px;
+      color: var(--highlight);
+    }
+
+    .trend-tabs {
+      display: flex;
+      gap: 6px;
+    }
+
+    .trend-tab {
+      padding: 5px 14px;
+      border-radius: 4px;
+      font-size: 12px;
+      font-family: 'Exo 2', sans-serif;
+      font-weight: 600;
+      cursor: pointer;
+      border: 1px solid var(--border);
+      background: var(--primary);
+      color: var(--text-sub);
+      transition: all 0.18s;
+    }
+
+    .trend-tab.active {
+      background: var(--accent1);
+      border-color: var(--accent1);
+      color: #fff;
+    }
+
+    .trend-tab:hover:not(.active) {
+      border-color: var(--accent1);
+      color: var(--text-main);
+    }
+
+    .trend-chart-wrap {
+      padding: 16px 18px;
+      height: 200px;
+      position: relative;
+    }
+
+    /* ── LAYOUT ──────────────────────────────────────── */
+    .scp-layout {
+      display: grid;
+      grid-template-columns: 200px 1fr;
+      gap: 24px;
+      align-items: start;
+    }
+
+    .scp-hero-panel {
+      background: var(--secondary);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 20px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 12px;
+      text-align: center;
+    }
+
+    .scp-hero-panel .scp-icon {
+      width: 100px;
+      height: 100px;
+      border-radius: 50%;
+      overflow: hidden;
+      border: 3px solid var(--accent1);
+      background: var(--primary);
+    }
+
+    .scp-hero-panel .scp-icon img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+
+    .scp-hero-panel .scp-name {
+      font-family: 'Rajdhani', sans-serif;
+      font-size: 22px;
+      font-weight: 700;
+      color: var(--text-main);
+    }
+
+    .scp-hero-panel .scp-role {
+      font-size: 12px;
+      color: var(--text-sub);
+    }
+
+    .scp-stats {
+      width: 100%;
+      background: var(--primary);
+      border-radius: 6px;
+      padding: 10px 12px;
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    .scp-stat-row {
+      display: flex;
+      justify-content: space-between;
+      font-size: 12px;
+    }
+
+    .scp-stat-row .label { color: var(--text-sub); }
+    .scp-stat-row .value { font-weight: 600; color: var(--text-main); }
+
+    .scp-right-panel {
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+    }
+
+    .counter-section {
+      background: var(--secondary);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      overflow: hidden;
+    }
+
+    .counter-section-header {
+      padding: 12px 18px;
+      border-bottom: 1px solid var(--border);
+      background: rgba(0,0,0,0.25);
+    }
+
+    .counter-section-header h2 {
+      font-family: 'Rajdhani', sans-serif;
+      font-size: 17px;
+      font-weight: 700;
+      letter-spacing: 0.5px;
+    }
+
+    .counter-section-header.good h2 { color: var(--accent2); }
+    .counter-section-header.bad  h2 { color: #FF5252; }
+    .counter-section-header p { font-size: 12px; color: var(--text-sub); margin-top: 2px; }
+
+    .counter-heroes-grid {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
+      padding: 16px;
+    }
+
+    .counter-hero-card {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 5px;
+      cursor: pointer;
+      text-decoration: none;
+      transition: transform 0.15s;
+    }
+
+    .counter-hero-card:hover { transform: translateY(-3px); }
+
+    .counter-hero-card .hero-icon {
+      width: 54px;
+      height: 54px;
+      border-radius: 50%;
+      overflow: hidden;
+      border: 2px solid var(--border);
+      background: var(--secondary);
+    }
+
+    .counter-hero-card .hero-icon img {
+      width: 100%; height: 100%; object-fit: cover;
+    }
+
+    .counter-hero-card.good-pick .hero-icon { border-color: var(--accent2); }
+    .counter-hero-card.bad-pick  .hero-icon { border-color: #FF5252; }
+
+    .counter-hero-card span {
+      font-size: 11px;
+      color: var(--text-sub);
+      text-align: center;
+      max-width: 64px;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .tier-badge {
+      display: inline-block;
+      width: 26px; height: 26px;
+      line-height: 26px;
+      text-align: center;
+      border-radius: 4px;
+      font-family: 'Rajdhani', sans-serif;
+      font-size: 14px;
+      font-weight: 700;
+    }
+
+    .tier-badge.s { background: rgba(0,0,0,0.75); color: var(--tier-s); border: 1.5px solid var(--tier-s); }
+    .tier-badge.a { background: rgba(0,0,0,0.75); color: var(--tier-a); border: 1.5px solid var(--tier-a); }
+    .tier-badge.b { background: rgba(0,0,0,0.75); color: var(--tier-b); border: 1.5px solid var(--tier-b); }
+    .tier-badge.c { background: rgba(0,0,0,0.75); color: var(--tier-c); border: 1.5px solid var(--tier-c); }
+    .tier-badge.d { background: rgba(0,0,0,0.75); color: var(--tier-d); border: 1.5px solid var(--tier-d); }
+
+    .back-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      color: var(--accent1);
+      text-decoration: none;
+      font-size: 13px;
+      font-family: 'Rajdhani', sans-serif;
+      font-weight: 600;
+      letter-spacing: 0.5px;
+      margin-bottom: 18px;
+      transition: color 0.15s;
+    }
+
+    .back-btn:hover { color: var(--text-main); }
+
+    .empty-state {
+      text-align: center;
+      padding: 40px 20px;
+      color: var(--text-sub);
+    }
+
+    @media (max-width: 700px) {
+      .scp-layout { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+
+  <div id="navbar-placeholder"></div>
+
+  <div class="page-wrapper">
+
+    <div class="page-header">
+      <h1>MOBILE LEGENDS: <span>SELECTED COUNTER PICK</span></h1>
+      <p>Source based on <strong>Counter Relationship</strong> derived from hero roles and META data.</p>
+    </div>
+
+    <a href="counterpick.html" class="back-btn">← Back to Counter Pick</a>
+
+    <div id="not-found" style="display:none;">
+      <div class="empty-state">
+        <p style="font-size:18px;">Hero not found.</p>
+        <p>Please select a hero from the <a href="counterpick.html" style="color:var(--accent1);">Counter Pick</a> page.</p>
+      </div>
+    </div>
+
+    <div id="scp-main" style="display:none;">
+      <div class="scp-layout">
+
+        <!-- Left: Hero panel -->
+        <div class="scp-hero-panel" id="hero-panel"></div>
+
+        <!-- Right: Counter sections -->
+        <div class="scp-right-panel">
+
+          <div class="counter-section">
+            <div class="counter-section-header good">
+              <h2>✅ Best Counter For</h2>
+              <p>This hero performs <strong>well against</strong> the following heroes</p>
+            </div>
+            <div class="counter-heroes-grid" id="good-against-grid"></div>
+          </div>
+
+          <div class="counter-section">
+            <div class="counter-section-header bad">
+              <h2>⚠️ Countered By</h2>
+              <p>This hero is <strong>weak against</strong> the following heroes</p>
+            </div>
+            <div class="counter-heroes-grid" id="weak-against-grid"></div>
+          </div>
+
+        </div>
+      </div>
+
+      <!-- 7-Day Trend Chart -->
+      <div class="trend-section">
+        <div class="trend-header">
+          <h2>📈 7-Day Performance Trend</h2>
+          <div class="trend-tabs">
+            <button class="trend-tab active" data-metric="win_rate">Win Rate</button>
+            <button class="trend-tab" data-metric="ban_rate">Ban Rate</button>
+            <button class="trend-tab" data-metric="appearance_rate">Pick Rate</button>
+          </div>
+        </div>
+        <div class="trend-chart-wrap">
+          <canvas id="trendChart"></canvas>
+        </div>
+      </div>
+
+    </div>
+
+  </div>
+
+  <div id="footer-placeholder"></div>
+
+  <!-- Chart.js -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+  <script src="app.js"></script>
+  <script>
+    document.getElementById('navbar-placeholder').innerHTML = window.MLBB.buildNavbar('counterpick');
+    document.getElementById('footer-placeholder').innerHTML = window.MLBB.buildFooter();
+
+    const F = window.MLBB.F;
+    let trendChart = null;
+    let currentHero = null;
+    let currentMetric = 'win_rate';
+
+    // ── URL param ─────────────────────────────────────
+    function getHeroId() {
+      return parseInt(new URLSearchParams(window.location.search).get('id'));
+    }
+
+    // ── Hero panel ────────────────────────────────────
+    function buildHeroPanel(hero) {
+      const tier = hero[F.TIER];
+      const tierColor = {
+        S:'var(--tier-s)', A:'var(--tier-a)', B:'var(--tier-b)',
+        C:'var(--tier-c)', D:'var(--tier-d)'
+      }[tier];
+
+      document.title = `${hero[F.NAME]} Counter Pick – MLBB Prodigy`;
+
+      return `
+        <div class="scp-icon">
+          <img src="${hero[F.IMG]}" alt="${hero[F.NAME]}" onerror="this.style.display='none'">
+        </div>
+        <div class="scp-name">${hero[F.NAME]}</div>
+        <div class="scp-role">${hero[F.ROLES].join(' / ')}</div>
+        <div class="scp-role" style="font-size:11px;">${hero[F.LANES].join(' · ')}</div>
+        <div style="font-family:'Rajdhani',sans-serif;font-size:18px;font-weight:700;color:${tierColor};">
+          Tier ${tier}
+        </div>
+        <div class="scp-stats">
+          <div class="scp-stat-row">
+            <span class="label">Win Rate</span>
+            <span class="value" style="color:var(--accent2);">${window.MLBB.pct(hero[F.WIN])}</span>
+          </div>
+          <div class="scp-stat-row">
+            <span class="label">Pick Rate</span>
+            <span class="value">${window.MLBB.pct(hero[F.PICK])}</span>
+          </div>
+          <div class="scp-stat-row">
+            <span class="label">Ban Rate</span>
+            <span class="value" style="color:#FF5252;">${window.MLBB.pct(hero[F.BAN])}</span>
+          </div>
+          <div class="scp-stat-row">
+            <span class="label">Score</span>
+            <span class="value" style="color:var(--highlight);">${hero[F.SCORE].toFixed(2)}</span>
+          </div>
+        </div>`;
+    }
+
+    // ── Counter grid ──────────────────────────────────
+    function buildCounterGrid(heroIds, cssClass) {
+      const cards = heroIds.map(id => {
+        const h = window.MLBB.getHeroById(id);
+        if (!h) return '';
+        return `
+          <a class="counter-hero-card ${cssClass}"
+             href="selectcounterpick.html?id=${h[F.ID]}"
+             title="${h[F.NAME]} (Tier ${h[F.TIER]})">
+            <div class="hero-icon">
+              <img src="${h[F.IMG]}" alt="${h[F.NAME]}" onerror="this.style.display='none'">
+            </div>
+            <span class="tier-badge ${h[F.TIER].toLowerCase()}">${h[F.TIER]}</span>
+            <span>${h[F.NAME]}</span>
+          </a>`;
+      }).join('');
+      return cards || `<p style="padding:12px;color:var(--text-sub);font-size:13px;">No data available.</p>`;
+    }
+
+    // ── Build trend chart ─────────────────────────────
+    function buildChart(hero, metric) {
+      const history = hero[F.HISTORY];
+
+      if (!history || history.length === 0) {
+        document.querySelector('.trend-chart-wrap').innerHTML =
+          `<p style="color:var(--text-sub);text-align:center;padding:60px 0;font-size:13px;">No trend data available.</p>`;
+        return;
+      }
+
+      // Sort oldest → newest
+      const sorted = [...history].sort((a, b) => new Date(a.date) - new Date(b.date));
+
+      const labels = sorted.map(d => {
+        const date = new Date(d.date);
+        return `${date.getDate()}/${date.getMonth() + 1}`;
+      });
+
+      const values = sorted.map(d => parseFloat((d[metric] * 100).toFixed(2)));
+
+      const metricColors = {
+        win_rate:        { line: '#2ECC71', fill: 'rgba(46,204,113,0.12)' },
+        ban_rate:        { line: '#FF5252', fill: 'rgba(255,82,82,0.12)'  },
+        appearance_rate: { line: '#3A7BD5', fill: 'rgba(58,123,213,0.12)' }
+      };
+
+      const metricLabels = {
+        win_rate:        'Win Rate (%)',
+        ban_rate:        'Ban Rate (%)',
+        appearance_rate: 'Pick Rate (%)'
+      };
+
+      const col = metricColors[metric];
+
+      // Destroy old chart if exists
+      if (trendChart) {
+        trendChart.destroy();
+        trendChart = null;
+      }
+
+      // Re-create canvas (needed after destroy)
+      const wrap = document.querySelector('.trend-chart-wrap');
+      wrap.innerHTML = '<canvas id="trendChart"></canvas>';
+      const ctx = document.getElementById('trendChart').getContext('2d');
+
+      trendChart = new Chart(ctx, {
+        type: 'line',
+        data: {
+          labels,
+          datasets: [{
+            label: metricLabels[metric],
+            data: values,
+            borderColor: col.line,
+            backgroundColor: col.fill,
+            borderWidth: 2.5,
+            pointBackgroundColor: col.line,
+            pointRadius: 5,
+            pointHoverRadius: 7,
+            fill: true,
+            tension: 0.35
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: {
+            legend: { display: false },
+            tooltip: {
+              callbacks: {
+                label: ctx => ` ${ctx.parsed.y.toFixed(2)}%`
+              },
+              backgroundColor: '#2E2E3A',
+              titleColor: '#fff',
+              bodyColor: '#aaa',
+              borderColor: 'rgba(255,255,255,0.1)',
+              borderWidth: 1
+            }
+          },
+          scales: {
+            x: {
+              ticks: { color: '#aaa', font: { size: 11 } },
+              grid:  { color: 'rgba(255,255,255,0.05)' }
+            },
+            y: {
+              ticks: {
+                color: '#aaa',
+                font: { size: 11 },
+                callback: val => val.toFixed(1) + '%'
+              },
+              grid: { color: 'rgba(255,255,255,0.05)' }
+            }
+          }
+        }
+      });
+    }
+
+    // ── Tab switching ─────────────────────────────────
+    document.querySelectorAll('.trend-tab').forEach(btn => {
+      btn.addEventListener('click', () => {
+        document.querySelectorAll('.trend-tab').forEach(t => t.classList.remove('active'));
+        btn.classList.add('active');
+        currentMetric = btn.dataset.metric;
+        if (currentHero) buildChart(currentHero, currentMetric);
+      });
+    });
+
+    // ── Main render ───────────────────────────────────
+    function render() {
+      const heroId = getHeroId();
+      if (!heroId) { document.getElementById('not-found').style.display = 'block'; return; }
+
+      const hero = window.MLBB.getHeroById(heroId);
+      if (!hero) { document.getElementById('not-found').style.display = 'block'; return; }
+
+      currentHero = hero;
+
+      const counterData = window.MLBB.counters[heroId] ||
+                          window.MLBB.counters[String(heroId)] ||
+                          { good_against: [], weak_against: [] };
+
+      document.getElementById('hero-panel').innerHTML        = buildHeroPanel(hero);
+      document.getElementById('good-against-grid').innerHTML = buildCounterGrid(counterData.good_against, 'good-pick');
+      document.getElementById('weak-against-grid').innerHTML = buildCounterGrid(counterData.weak_against, 'bad-pick');
+
+      document.getElementById('scp-main').style.display = 'block';
+
+      // Build chart after layout renders
+      setTimeout(() => buildChart(hero, currentMetric), 50);
+    }
+
+    window.MLBB.onReady(render);
+  </script>
+
+</body>
+</html>

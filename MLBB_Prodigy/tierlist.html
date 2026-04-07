@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Hero Tier List – MLBB Prodigy</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+  <div id="navbar-placeholder"></div>
+
+  <div class="page-wrapper">
+
+    <!-- Page Header -->
+    <div class="page-header">
+      <h1>MOBILE LEGENDS: <span>HERO TIER LIST</span></h1>
+      <p>Calculated based on <strong>Picks</strong>, <strong>Wins</strong> and <strong>Ban Rates</strong> on <strong>Mythical Glory Rank</strong></p>
+      <p style="margin-top:6px;">Last updated &nbsp;<strong style="color:var(--highlight);" id="last-updated">—</strong></p>
+    </div>
+
+    <!-- Filters -->
+    <div id="filter-container"></div>
+
+    <!-- Tier rows -->
+    <div id="tier-list-container">
+      <!-- Populated by JS -->
+    </div>
+
+  </div>
+
+  <div id="footer-placeholder"></div>
+
+  <script src="app.js"></script>
+  <script>
+    document.getElementById('navbar-placeholder').innerHTML = window.MLBB.buildNavbar('tierlist');
+    document.getElementById('footer-placeholder').innerHTML = window.MLBB.buildFooter();
+    document.getElementById('filter-container').innerHTML   = window.MLBB.buildFilterBar(false);
+
+    const F      = window.MLBB.F;
+    const TIERS  = ['S', 'A', 'B', 'C', 'D'];
+
+    let filterState = { roles: new Set(), lanes: new Set() };
+
+    function render() {
+      const filtered = window.MLBB.filterHeroes(window.MLBB.heroes, filterState);
+      const container = document.getElementById('tier-list-container');
+
+      const html = TIERS.map(tier => {
+        const heroesInTier = filtered
+          .filter(h => h[F.TIER] === tier)
+          .sort((a, b) => b[F.SCORE] - a[F.SCORE]);
+
+        const heroCards = heroesInTier.length > 0
+          ? heroesInTier.map(h => `
+              <div class="hero-card"
+                onclick="location.href='selectcounterpick.html?id=${h[F.ID]}'"
+                title="${h[F.NAME]} (${h[F.ROLES].join(', ')})">
+                ${window.MLBB.heroImg(h, 52)}
+                <span>${h[F.NAME]}</span>
+              </div>`).join('')
+          : `<span class="no-heroes">No heroes match your filters.</span>`;
+
+        return `
+          <div class="tier-row">
+            <div class="tier-label ${tier.toLowerCase()}">${tier}</div>
+            <div class="tier-heroes">${heroCards}</div>
+          </div>`;
+      }).join('');
+
+      container.innerHTML = `<div class="tier-table">${html}</div>`;
+    }
+
+    window.MLBB.onReady(() => {
+      const d = new Date(window.MLBB.updatedAt);
+  document.getElementById('last-updated').textContent =
+    d.toLocaleDateString('en-GB', { day:'numeric', month:'long', year:'numeric' });
+      filterState = window.MLBB.initFilters(() => render());
+      render();
+    });
+  </script>
+
+</body>
+</html>

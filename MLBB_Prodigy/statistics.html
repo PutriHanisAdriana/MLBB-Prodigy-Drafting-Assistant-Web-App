@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Hero Statistics – MLBB Prodigy</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+  <div id="navbar-placeholder"></div>
+
+  <div class="page-wrapper">
+
+    <!-- Page Header -->
+    <div class="page-header">
+      <h1>MOBILE LEGENDS: <span>HERO STATISTICS</span></h1>
+      <p>Source based on <strong>Picks</strong>, <strong>Wins</strong> and <strong>Ban Rates</strong> on <strong>Mythical Glory Rank</strong></p>
+      <p style="margin-top:6px;">Last updated &nbsp;<strong style="color:var(--highlight);" id="last-updated">—</strong></p>
+    </div>
+
+    <!-- Filters with search -->
+    <div id="filter-container"></div>
+
+    <!-- Sort hint -->
+    <p class="stats-meta">Default ranking based on <strong>Highest Win Rate</strong>. Click any column header to sort.</p>
+
+    <!-- Table -->
+    <table class="stats-table" id="stats-table">
+      <thead>
+        <tr>
+          <th class="rank-col">#</th>
+          <th class="hero-col">Hero</th>
+          <th data-sort="tier">Tier</th>
+          <th data-sort="win"  class="sorted-desc">Win Rate</th>
+          <th data-sort="pick">Pick Rate</th>
+          <th data-sort="ban">Ban Rate</th>
+        </tr>
+      </thead>
+      <tbody id="stats-tbody">
+        <!-- Populated by JS -->
+      </tbody>
+    </table>
+
+  </div>
+
+  <div id="footer-placeholder"></div>
+
+  <script src="app.js"></script>
+  <script>
+    document.getElementById('navbar-placeholder').innerHTML = window.MLBB.buildNavbar('statistics');
+    document.getElementById('footer-placeholder').innerHTML = window.MLBB.buildFooter();
+    document.getElementById('filter-container').innerHTML   = window.MLBB.buildFilterBar(true);
+
+    const F = window.MLBB.F;
+    const TIER_ORDER = window.MLBB.TIER_ORDER;
+
+    let filterState = { roles: new Set(), lanes: new Set() };
+    let searchQuery = '';
+    let sortKey  = 'win';
+    let sortDir  = -1; // -1 = descending, 1 = ascending
+
+    // ── Render table ──────────────────────────────────────
+    function render() {
+      let heroes = window.MLBB.filterHeroes(window.MLBB.heroes, filterState, searchQuery);
+
+      // Sort
+      heroes = [...heroes].sort((a, b) => {
+        let va, vb;
+        switch(sortKey) {
+          case 'win':  va = a[F.WIN];  vb = b[F.WIN];  break;
+          case 'ban':  va = a[F.BAN];  vb = b[F.BAN];  break;
+          case 'pick': va = a[F.PICK]; vb = b[F.PICK]; break;
+          case 'tier': va = TIER_ORDER[a[F.TIER]] || 0; vb = TIER_ORDER[b[F.TIER]] || 0; break;
+          default:     va = a[F.WIN];  vb = b[F.WIN];
+        }
+        return (va - vb) * sortDir;
+      });
+
+      const tbody = document.getElementById('stats-tbody');
+      if (heroes.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="6" style="text-align:center;padding:30px;color:var(--text-sub);">No heroes match your filters.</td></tr>`;
+        return;
+      }
+
+      tbody.innerHTML = heroes.map((h, i) => {
+        const tier = h[F.TIER].toLowerCase();
+        return `
+          <tr style="cursor:pointer;" onclick="location.href='selectcounterpick.html?id=${h[F.ID]}'">
+            <td class="rank-cell">${i + 1}</td>
+            <td>
+              <div class="hero-cell">
+                ${window.MLBB.heroImg(h, 38)}
+                <div>
+                  <div class="hero-name">${h[F.NAME]}</div>
+                  <div class="hero-roles">${h[F.ROLES].join(' / ')} · ${h[F.LANES].join(', ')}</div>
+                </div>
+              </div>
+            </td>
+            <td><span class="tier-badge ${tier}">${h[F.TIER]}</span></td>
+            <td class="rate-cell">${window.MLBB.pct(h[F.WIN])}</td>
+            <td class="rate-cell">${window.MLBB.pct(h[F.PICK])}</td>
+            <td class="rate-cell">${window.MLBB.pct(h[F.BAN])}</td>
+          </tr>`;
+      }).join('');
+    }
+
+    // ── Column sort ───────────────────────────────────────
+    document.querySelectorAll('.stats-table th[data-sort]').forEach(th => {
+      th.addEventListener('click', () => {
+        const key = th.dataset.sort;
+        if (sortKey === key) {
+          sortDir *= -1;
+        } else {
+          sortKey = key;
+          sortDir = key === 'tier' ? 1 : -1;
+        }
+        // Update header classes
+        document.querySelectorAll('.stats-table th').forEach(t => {
+          t.classList.remove('sorted-asc', 'sorted-desc');
+        });
+        th.classList.add(sortDir === -1 ? 'sorted-desc' : 'sorted-asc');
+        render();
+      });
+    });
+
+    // ── Init ──────────────────────────────────────────────
+    window.MLBB.onReady(() => {
+      const d = new Date(window.MLBB.updatedAt);
+  document.getElementById('last-updated').textContent =
+    d.toLocaleDateString('en-GB', { day:'numeric', month:'long', year:'numeric' });
+      filterState = window.MLBB.initFilters(() => render());
+
+      const searchInput = document.getElementById('heroSearch');
+      if (searchInput) {
+        searchInput.addEventListener('input', e => {
+          searchQuery = e.target.value;
+          render();
+        });
+      }
+
+      render();
+    });
+  </script>
+
+</body>
+</html>

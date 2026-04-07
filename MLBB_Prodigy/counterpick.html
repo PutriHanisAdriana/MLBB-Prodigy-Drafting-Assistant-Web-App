@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Counter Pick – MLBB Prodigy</title>
+  <link rel="stylesheet" href="style.css">
+  <style>
+   
+    /* ── HERO GRID ───────────────────────────────────── */
+    .hero-portrait-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(110px, 1fr));
+      gap: 18px;
+    }
+
+    .portrait-card {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 8px;
+      cursor: pointer;
+      text-decoration: none;
+      transition: transform 0.15s;
+    }
+
+    .portrait-card:hover {
+      transform: translateY(-4px);
+    }
+
+    .portrait-img {
+      width: 100%;
+      aspect-ratio: 1 / 1;
+      border-radius: 10px;
+      overflow: hidden;
+      background: var(--secondary);
+      border: 2px solid rgba(255,255,255,0.08);
+      transition: border-color 0.15s;
+    }
+
+    .portrait-img img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: block;
+    }
+
+    .portrait-card:hover .portrait-img {
+      border-color: var(--accent1);
+    }
+
+    .portrait-name {
+      font-size: 12px;
+      color: var(--text-main);
+      text-align: center;
+      font-family: 'Exo 2', sans-serif;
+      font-weight: 500;
+      line-height: 1.3;
+    }
+
+    /* ── EMPTY STATE ─────────────────────────────────── */
+    .cp-empty {
+      text-align: center;
+      padding: 60px 20px;
+      color: var(--text-sub);
+      font-size: 14px;
+    }
+  </style>
+</head>
+<body>
+
+  <div id="navbar-placeholder"></div>
+
+  <div class="page-wrapper">
+
+    <div class="page-header">
+      <h1>MOBILE LEGENDS: <span>COUNTER PICK</span></h1>
+      <p>Select a hero to view <strong>Best Counter For</strong> , <strong>Countered By</strong> and <strong>7-Day Performance Trend</strong> information.</p>
+    </div>
+
+    <!-- Centred search bar -->
+    <div class="search-bar-wrap">
+  <label for="heroSearch">Search Hero:</label>
+  <input type="text" id="heroSearch" placeholder="e.g. Freya, Gloo..." autocomplete="off">
+</div>
+
+    <!-- Hero portrait grid -->
+    <div class="hero-portrait-grid" id="cp-container"></div>
+
+  </div>
+
+  <div id="footer-placeholder"></div>
+
+  <script src="app.js"></script>
+  <script>
+    document.getElementById('navbar-placeholder').innerHTML = window.MLBB.buildNavbar('counterpick');
+    document.getElementById('footer-placeholder').innerHTML = window.MLBB.buildFooter();
+
+    const F = window.MLBB.F;
+    let searchQuery = '';
+
+    function render() {
+      const container = document.getElementById('cp-container');
+
+      // Filter by search only, sort by hero ID ascending (oldest first)
+      let heroes = window.MLBB.heroes
+        .filter(h => !searchQuery ||
+          h[F.NAME].toLowerCase().includes(searchQuery.toLowerCase()))
+        .sort((a, b) => a[F.ID] - b[F.ID]);
+
+      if (heroes.length === 0) {
+        container.innerHTML = `<div class="cp-empty">No heroes found. Try a different search.</div>`;
+        return;
+      }
+
+      container.innerHTML = heroes.map(h => `
+        <a class="portrait-card" href="selectcounterpick.html?id=${h[F.ID]}" title="${h[F.NAME]}">
+          <div class="portrait-img">
+            <img src="${h[F.IMG]}" alt="${h[F.NAME]}" loading="lazy"
+                 onerror="this.style.display='none'">
+          </div>
+          <span class="portrait-name">${h[F.NAME]}</span>
+        </a>`).join('');
+    }
+
+    window.MLBB.onReady(() => {
+      const searchInput = document.getElementById('heroSearch');
+      searchInput.addEventListener('input', e => {
+        searchQuery = e.target.value;
+        render();
+      });
+      render();
+    });
+  </script>
+
+</body>
+</html>
